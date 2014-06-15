@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  	   xmlns:lang="http://www.springframework.org/schema/lang"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	   					   http://www.springframework.org/schema/beans/spring-beans.xsd
+	   					   http://www.springframework.org/schema/lang 
+	   					   http://www.springframework.org/schema/lang/spring-lang.xsd">
+
+        <bean id="esperBean" class="de.hofmanns.esper.EsperBean">
+    	<property name="statements">
+    	    <bean class="de.hofmanns.esper.StatementBean">
+    		<constructor-arg value="select itemName, avg(price) from plain.esper.exampel.OrderEvent.win:time(2 sec)"/>
+    		<property name="listeners">
+    		    <list>
+<!--     			<bean class="MyUpdateListener"/> -->
+    			<ref bean="groovyListener"/>
+    		    </list>
+    		</property>
+    	    </bean>
+    	</property>
+        </bean>
+ 
+    
+        <!--sample groovy listener-->
+        <lang:groovy id="groovyListener">
+    	<lang:inline-script>
+    	    package org.springframework.scripting.groovy;
+    	    import com.espertech.esper.client.UpdateListener
+    	    import com.espertech.esper.client.EventBean;
+    
+    	    class GroovyMessenger implements UpdateListener {
+    			public void update(EventBean[] eventBeans, EventBean[] eventBeans1) {
+    			 	def event = eventBeans[0];
+					def average = event.getUnderlying().get("avg(price)")
+		    	 	def itemName = event.getUnderlying().get("itemName")
+					System.out.println("upon arrival of "+itemName+" the average stood at "+average)
+    			}
+    	    }
+    	</lang:inline-script>
+        </lang:groovy>
+    
+    </beans>
